@@ -1,0 +1,625 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.maru.chaekmaru.mypage.IMypageDaoForMybatis">
+
+	<select id="getMyCartList"
+			parameterType="String"
+			resultType="com.maru.chaekmaru.mypage.MemberCartDto">
+				<![CDATA[
+					SELECT * FROM 
+						TBL_MEMBER_CART MC 
+					JOIN 
+						TBL_BOOK B  
+					ON 
+						MC.B_NO = B.B_NO 
+					JOIN 
+						TBL_MEMBER M 
+					ON 
+						MC.M_ID = M.M_ID 
+					WHERE 
+						MC.M_ID = #{m_id} 
+					ORDER BY 
+						MC.C_NO DESC
+				 			]]>
+	</select>
+	
+	<update id="addBookCount"
+			parameterType="Object">
+					
+					UPDATE 
+						TBL_MEMBER_CART 
+					SET 
+						C_BOOK_COUNT = #{c_book_count},
+						C_MOD_DATE = SYSTIMESTAMP 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						C_NO = #{c_no} 
+						
+	</update>
+
+	<update id="addBookCountByBNo"
+			parameterType="Object">
+				<![CDATA[
+						UPDATE 
+						TBL_MEMBER_CART 
+					SET
+						C_BOOK_COUNT =
+						(SELECT C_BOOK_COUNT FROM TBL_MEMBER CART WHERE 
+						M_ID = #{m_id} AND B_NO = #{b_no}) + #{count},
+						C_MOD_DATE = SYSTIMESTAMP 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						B_NO =  #{b_no}
+					]]>
+	</update>
+	
+	<delete id="deleteMyCart"
+			parameterType="Object">
+		
+					DELETE FROM 
+						TBL_MEMBER_CART 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						C_NO = #{c_no}
+		
+	</delete>
+
+	<select id="paymentForm"
+			parameterType="map"
+			resultType="com.maru.chaekmaru.mypage.MemberCartDto">
+			
+					SELECT * FROM 
+						TBL_MEMBER_CART MC 
+					JOIN 
+						TBL_BOOK B 
+					ON 
+						MC.B_NO = B.B_NO 
+					JOIN 
+						TBL_MEMBER M 
+					ON 
+						MC.M_ID = M.M_ID 
+					WHERE 
+						MC.M_ID = #{m_id} 
+					AND 
+						MC.B_NO = #{b_no}
+
+	</select>
+	
+	<insert id="insertPoint"
+			parameterType="com.maru.chaekmaru.mypage.MyPointListDto">
+			
+			INSERT INTO 
+				TBL_POINT_LIST 
+			VALUES(#{m_id}, #{pl_payment_book_point}, #{pl_desc}, SYSTIMESTAMP)
+			
+	</insert>
+	
+	<select id="allPaymentForm"
+			parameterType="map"
+			resultType="com.maru.chaekmaru.mypage.MemberCartDto">
+			
+					SELECT * FROM 
+						TBL_MEMBER_CART MC 
+					JOIN 
+						TBL_BOOK B 
+					ON 
+						MC.B_NO = B.B_NO 
+					JOIN 
+						TBL_MEMBER M 
+					ON 
+						MC.M_ID = M.M_ID 
+					WHERE 
+						MC.M_ID = #{m_id} 
+					
+	</select>
+	
+	<insert id="addMyCart"
+			parameterType="map">
+	
+		INSERT INTO 
+			TBL_MEMBER_CART 
+		VALUES(MEMBER_CART_SEQ.NEXTVAL, #{m_id}, #{b_no}, #{count}, SYSTIMESTAMP, SYSTIMESTAMP) 
+	
+	</insert>
+
+	<select id="selectBookCount"
+			parameterType="map"
+			resultType="Integer">
+			
+					SELECT NVL(MAX(C_BOOK_COUNT), 0) FROM 
+						TBL_MEMBER_CART
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						B_NO = #{b_no}
+						
+	</select>
+	
+	<insert id="allPaymentMyCartList"
+			parameterType="com.maru.chaekmaru.shop.SaledBookDto">
+					
+					INSERT INTO 
+						TBL_SALED_BOOK(
+						SB_NO, 
+						B_NO, 
+						M_ID, 
+						SB_ORDER_NO, 
+						SB_BOOK_COUNT, 
+						SB_NAME, 
+						SB_ADDR_CODE, 
+						SB_ADDR, 
+						SB_DETAIL_ADDR, 
+						SB_MEMO, 
+						SB_SALE_DATE, 
+						SB_ALL_PRICE, 
+                        SB_SALED_PRICE, 
+						SB_STATE, 
+						SB_REG_DATE, 
+						SB_MOD_DATE) 
+					VALUES(
+					SALED_BOOK_SEQ.NEXTVAL, #{saledBookDto.b_no}, #{m_id}, #{saledBookDto.sb_order_no}, #{saledBookDto.sb_book_count}, #{saledBookDto.sb_name}, #{saledBookDto.sb_addr_code}, 
+					#{saledBookDto.sb_addr}, #{saledBookDto.sb_detail_addr}, #{saledBookDto.sb_memo}, SYSTIMESTAMP , #{saledBookDto.sb_all_price} , #{saledBookDto.sb_saled_price} , 1, SYSTIMESTAMP, SYSTIMESTAMP)
+					
+	</insert>
+	
+	<select id="selectBook" parameterType="Integer"
+		resultType="com.maru.chaekmaru.book.BookDto">
+		
+		SELECT * FROM 
+			TBL_BOOK 
+		WHERE 
+			B_NO = #{b_no}
+			
+	</select>
+	
+	 
+	<select id="getPaymentList"
+			parameterType="String"
+			resultType="com.maru.chaekmaru.shop.SaledBookDto">
+			
+					SELECT * FROM 
+						TBL_SALED_BOOK SB 
+					JOIN 
+						TBL_BOOK B 
+					ON 
+						SB.B_NO = B.B_NO 
+					WHERE 
+						SB.M_ID = #{m_id} 
+					ORDER BY 
+						SB.SB_NO DESC
+	</select>
+
+    <update id="remainBooks"
+			parameterType="map">
+			
+					UPDATE  
+						TBL_BOOK 
+					SET 
+						B_COUNT = ${remainBooks} 
+					WHERE 
+						B_NO = #{b_no}
+					
+	</update>
+	
+	<select id="myPickList"
+			parameterType="String"
+			resultType="com.maru.chaekmaru.mypage.MemberPickDto">
+			
+					SELECT * FROM 
+						TBL_MEMBER_PICK MP 
+					JOIN 
+						TBL_MEMBER M 
+					ON 
+						MP.M_ID = M.M_ID 
+					JOIN 
+						TBL_BOOK B 
+					ON 
+						MP.B_NO = B.B_NO 
+					WHERE 
+						MP.M_ID = #{m_id} 
+					ORDER BY 
+						MP.MP_NO DESC
+
+	</select>
+	
+	<select id="selectMyPointList"
+            parameterType="String"
+			resultType="com.maru.chaekmaru.mypage.MyPointListDto">
+		SELECT * FROM TBL_POINT_LIST WHERE M_ID = #{m_id}
+			ORDER BY PL_REG_DATE DESC
+	</select>
+	
+	<select id="selectBookCountBySbNo"
+			parameterType="Integer">
+	
+					SELECT 
+						SB_BOOK_COUNT 
+					FROM 
+						TBL_SALED_BOOK 
+					WHERE 
+						SB_NO = #{sb_no}
+	
+	</select>
+	
+	<select id="selectBookCountByBNo"
+			parameterType="Integer">
+	
+					SELECT 
+						B_COUNT 
+					FROM 
+						TBL_BOOK 
+					WHERE 
+						B_NO = #{b_no}
+	
+	</select>
+	
+	<update id="updateCancelBookCount"
+			parameterType="map">
+	
+					UPDATE 
+						TBL_BOOK 
+					SET 
+						B_COUNT = #{updateCancelBookCount} 
+					WHERE 
+						B_NO = #{selectBNo}
+	
+	</update>
+	
+	<select id="paymentPoint"
+			parameterType="map">
+	
+					SELECT 
+						NVL(SUM(SB_ALL_PRICE), 0) 
+					FROM 
+						TBL_SALED_BOOK 
+					WHERE 
+						SB_ORDER_NO = #{sb_order_no} 
+					AND 
+						M_ID = #{m_id} 
+					AND 
+						SB_STATE = 1
+	
+	</select>
+	
+	<select id="selectNowPoint"
+			parameterType="String">
+	
+					SELECT 
+						NVL(SUM(PL_PAYMENT_BOOK_POINT), 0) 
+					FROM 
+						TBL_POINT_LIST 
+					WHERE 
+						M_ID= #{m_id}
+	
+	</select>
+	
+	<insert id="insertReturnPoint"
+			parameterType="map">
+	
+		INSERT INTO 
+			TBL_POINT_LIST 
+		VALUES(#{m_id}, #{returnPoint}, #{myPointListDto.pl_desc}, SYSTIMESTAMP) 
+	
+	</insert>
+	
+	<update id="saledStateUpdateZero"
+			parameterType="map">
+	
+					UPDATE 
+						TBL_SALED_BOOK 
+					SET 
+						SB_STATE = 0 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						SB_ORDER_NO = #{sb_order_no} 
+					AND 
+						SB_STATE = 1
+	
+	</update>
+	
+	<delete id="deleteMyPick"
+			parameterType="map">
+		
+					DELETE FROM 
+						TBL_MEMBER_PICK 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						B_NO = #{b_no}
+		
+	</delete>
+	
+	<select id="selectMaxSbOrderNo"
+			parameterType="String"
+			resultType="Integer">
+	
+					SELECT 
+						MAX(SB_ORDER_NO) 
+					FROM 
+						TBL_SALED_BOOK 
+					WHERE 
+						M_ID = #{m_id}
+	
+	</select>
+	
+	<select id="selectBookInMemberPick"
+			parameterType="map"
+			resultType="Integer">
+			
+					SELECT 
+						COUNT(B_NO) 
+					FROM 
+						TBL_MEMBER_PICK 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						B_NO = #{b_no}
+						
+	</select>
+	
+		<select id="isMemberPick"
+			parameterType="map"
+			resultType="com.maru.chaekmaru.mypage.MemberPickDto">
+			
+					SELECT * FROM 
+						TBL_MEMBER_PICK MP 
+					JOIN 
+						TBL_MEMBER M 
+					ON 
+						MP.M_ID = M.M_ID 
+					JOIN 
+						TBL_BOOK B 
+					ON 
+						MP.B_NO = B.B_NO 
+					WHERE 
+						MP.M_ID = #{m_id}
+						AND MP.B_NO = #{b_no} 
+					ORDER BY 
+						MP.MP_NO DESC
+
+	</select>
+	
+	
+	<insert id="addMyPick"
+			parameterType="map">
+	
+		INSERT INTO 
+			TBL_MEMBER_PICK 
+		VALUES(MEMBER_PICK_SEQ.NEXTVAL, #{m_id}, #{b_no}, SYSTIMESTAMP)
+	
+	</insert>
+	
+	<select id="sbOrderNoCount"
+			parameterType="String"
+			resultType="Integer">
+	
+					SELECT 
+						COUNT(SB_NO) 
+					FROM 
+						TBL_SALED_BOOK 
+					WHERE 
+						M_ID = #{m_id}
+	
+	</select>
+	
+	<update id="saledStateUpdateThree"
+			parameterType="map">
+	
+					UPDATE 
+						TBL_SALED_BOOK 
+					SET 
+						SB_STATE = 3, 
+						SB_RETURN_DATE = SYSTIMESTAMP 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						SB_NO = #{sb_no} 
+					AND 
+						B_NO = #{b_no}
+	
+	</update>
+	
+	<select id="selectBookData"
+			parameterType="Integer"
+			resultType="com.maru.chaekmaru.mypage.MemberCartDto">
+					SELECT * FROM 
+						TBL_BOOK
+					WHERE 
+						b_no = #{b_no} 
+	</select>
+	
+	<delete id="removeCartByBNo"
+			parameterType="map">
+		
+					DELETE FROM 
+						TBL_MEMBER_CART 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						B_NO = #{b_no}
+		
+	</delete>
+	<select id="selectAttendenceList"
+		parameterType="String"
+		resultType="com.maru.chaekmaru.mypage.AttendenceDto">
+			SELECT * FROM 
+				TBL_ATTEND_CHECK
+			WHERE 
+				m_id = #{m_id}
+				
+			ORDER BY AC_ATTEND_DATE ASC
+	</select>
+	
+	<insert id="removePointByBuyBooks"
+			parameterType="map">
+			
+			INSERT INTO 
+				TBL_POINT_LIST 
+			VALUES(#{m_id}, #{myPointListDto.pl_payment_book_point}, #{myPointListDto.pl_desc}, SYSTIMESTAMP)
+			
+	</insert>
+	
+	<select id="getOrderNo"
+			parameterType="String"
+			resultType="com.maru.chaekmaru.shop.SaledBookDto">
+					SELECT DISTINCT 
+						SB_ORDER_NO 
+					FROM 
+						TBL_SALED_BOOK 
+					WHERE 
+						M_ID = #{m_id} 
+					ORDER BY 
+						SB_ORDER_NO DESC
+	</select>
+	<insert id="insertAttendence"
+			parameterType="map">
+	
+	INSERT INTO TBL_ATTEND_CHECK VALUES(#{m_id}, #{acc}, SYSTIMESTAMP)
+	
+	</insert>
+	
+	<select id="selectAccAttendence"
+			parameterType="String"
+			resultType="Integer">
+			SELECT NVL(MAX(AC_ATTEND_DATE), 0) FROM 
+				TBL_ATTEND_CHECK
+			WHERE 
+				m_id = #{m_id}
+			ORDER BY AC_ATTEND_DATE DESC
+	</select>
+	
+	
+	<select id="getPaymentListByONo"
+			parameterType="map"
+			resultType="com.maru.chaekmaru.shop.SaledBookDto">
+				SELECT * FROM 
+					TBL_SALED_BOOK SB 
+				JOIN 
+					TBL_BOOK B 
+				ON 
+					SB.B_NO = B.B_NO 
+				WHERE 
+					SB.M_ID = #{m_id}
+					AND SB.SB_ORDER_NO = #{o_no}
+				ORDER BY 
+					SB.SB_NO DESC
+	</select>
+	
+	<select id="sumAllBook"
+			parameterType="map">
+				SELECT 
+					NVL(SUM(SB_BOOK_COUNT), 0) 
+				FROM 
+					TBL_SALED_BOOK 
+				WHERE 
+					M_ID = #{m_id} 
+					AND SB_ORDER_NO = #{orderNo}
+	</select>
+	
+	<select id="selectSalePrice"
+			parameterType="map">
+	
+					SELECT 
+						NVL(SUM(SB_SALED_PRICE), 0) 
+					FROM 
+						TBL_SALED_BOOK 
+					WHERE 
+						SB_ORDER_NO = #{sb_order_no} 
+					AND 
+						M_ID = #{m_id} 
+					AND 
+						SB_STATE = 1
+	
+	</select>
+	
+	<select id="sumSbAllPointByMId"
+			parameterType="String">
+				SELECT 
+					NVL(SUM(SB_ALL_PRICE), 0) 
+				FROM 
+					TBL_SALED_BOOK 
+				WHERE 
+					M_ID = #{m_id} 
+				AND 
+					SB_STATE = 1
+	</select>
+	
+	<select id="sumSbSalePointByMId"
+			parameterType="String">
+				SELECT 
+					NVL(SUM(SB_SALED_PRICE), 0) 
+				FROM 
+					TBL_SALED_BOOK 
+				WHERE 
+					M_ID = #{m_id} 
+				AND 
+					SB_STATE = 1
+	</select>
+	
+	<update id="updateGrade"
+			parameterType="map">
+	
+					UPDATE 
+						TBL_MEMBER 
+					SET 
+						M_GRADE = #{state}
+					WHERE 
+						M_ID = #{m_id}
+	
+	</update>
+	
+	<select id="selectMyPaymentBySbON"
+			parameterType="map"
+			resultType="com.maru.chaekmaru.shop.SaledBookDto">
+				SELECT 
+					* 
+				FROM 
+					TBL_SALED_BOOK SB 
+				JOIN 
+					TBL_BOOK B 
+				ON 
+					SB.b_no = B.B_NO 
+				WHERE 
+					SB.SB_ORDER_NO = #{sb_order_no} 
+				AND 
+					SB.SB_STATE = 1 
+				AND 
+					SB.M_ID = #{m_id}
+	</select>
+	
+	<select id="sumPaymentBookBySbON"
+			parameterType="map">
+				SELECT 
+					NVL(SUM(SB_BOOK_COUNT), 0) 
+				FROM 
+					TBL_SALED_BOOK 
+				WHERE 
+					SB_ORDER_NO = #{sb_order_no} 
+				AND 
+					SB_STATE = 1 
+				AND 
+					M_ID = #{m_id} 
+	</select>
+	
+	<update id="confirmPayment"
+			parameterType="map">
+	
+					UPDATE 
+						TBL_SALED_BOOK 
+					SET 
+						SB_STATE = 2, 
+						SB_MOD_DATE = SYSTIMESTAMP 
+					WHERE 
+						M_ID = #{m_id} 
+					AND 
+						SB_ORDER_NO = #{sb_order_no}
+					AND 
+						SB_STATE = 1
+	
+	</update>
+
+</mapper>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+
+<th:block th:fragment="index_js">
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            if (document.getElementById("to_top")) {
+                document.getElementById("to_top").addEventListener("click", function () {
+                    window.scrollTo(0, 0);
+                });
+            }
+
+            if (document.getElementById("to_bottom")) {
+                document.getElementById("to_bottom").addEventListener("click", function () {
+                    window.scrollTo(0, document.body.scrollHeight);
+                });
+            }
+
+            if (document.getElementById("main_banner")) {
+                var swiper = new Swiper("#main_banner", {
+                    loop: true,
+                    autoplay: {
+                        delay: 3500,
+                        disableOnInteraction: false,
+                    },
+                });
+            }
+
+            if (document.getElementById("today_banner")) {
+                var swiper = new Swiper("#today_banner", {
+                    effect: "cards",
+                    grabCursor: true,
+                    loop: true,
+                    autoplay: {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                    },
+                });
+            }
+
+            if (document.getElementById("usermenu_btn")) {
+                ajaxRefreshLoginSession();
+            }
+        });
+
+        function spinnerStatus(status) {
+            let spinner = document.getElementById("spinner");
+
+            if (status == "on") {
+                spinner.style.display = "flex";
+            } else if (status == "off") {
+                spinner.style.display = "none";
+            }
+        }
+
+        function numberWithCommas(x) {
+            if (!x) return 0;
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function ajaxRefreshLoginSession() {
+            let httpRequest = new XMLHttpRequest();
+
+            httpRequest.open("POST", "/ajax/refresh_member_info", true);
+            httpRequest.setRequestHeader("Content-Type", "application/json");
+
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                    let data = JSON.parse(httpRequest.response);
+
+                    document.querySelectorAll(".point-now")[0].innerHTML = numberWithCommas(data.point) + " BP";
+
+                } else if (httpRequest.status == 403) {
+                    alert("접근 거부");
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 404) {
+                    alert("페이지 없음")
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 500) {
+                    alert("서버 오류 발생");
+                    spinnerStatus("off");
+                }
+            };
+
+            httpRequest.send();
+        }
+
+    </script>
+</th:block>
+
+</html>

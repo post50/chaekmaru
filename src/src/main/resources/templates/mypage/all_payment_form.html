@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
+
+<head>
+    <title>책마루 :: 결제 페이지</title>
+
+    <th:block th:replace="~{include/js/payment_js.html::payment_js}"></th:block>
+</head>
+
+<div id="payment" class="content-wrap" layout:fragment="content">
+    <h2 class="title">주문서</h2>
+
+    <div class="content">
+        <form th:action="@{/mypage/all_payment_form_confirm}" name="payment_form" method="post" class="form">
+
+            <div>
+                <div class="pay-result" th:each="buyBooksData : ${buyBooksDatas}">
+                    <div class="pay-info">
+                        <a class="pay-img-title" th:href="@{/book/view/{b_no}(b_no=${buyBooksData.b_no})}" target="_blank">
+                            <span><img th:src="@{${buyBooksData.b_thumbnail}}" alt="book_thumbnail" /></span>
+
+                            <div class="pay-book-list">
+                                <span class="pay-bookname">[[${buyBooksData.b_name}]]</span>
+
+                                <p class="pay-price-result">
+                                    [[${#numbers.formatInteger(buyBooksData.b_price, 1, 'COMMA')}]] BP
+                                    <i class="fa-solid fa-xmark"></i>
+                                    [[${buyBooksData.c_book_count}]] 권 = [[${#numbers.formatInteger(buyBooksData.b_price * buyBooksData.c_book_count, 1, 'COMMA')}]] BP
+                                </p>
+                            </div>
+                        </a>
+                        <input type="hidden" name="b_no" th:value="${buyBooksData.b_no}" />
+                    </div>
+                    <input type="hidden" th:data-index="${buyBooksData.b_no}" class="ck-box">
+                    <input type="hidden" th:id="${'b_no_' + buyBooksData.b_no}" th:value="${buyBooksData.b_no}">
+                    <input type="hidden" name="sb_book_count" th:value="${buyBooksData.c_book_count}" class="sb-count" />
+                    <input type="hidden" name="c_book_count" th:value="${buyBooksData.c_book_count}" th:id="${'c_book_count_' + buyBooksData.b_no}" />
+                    <input type="hidden" name="b_count" th:value="${buyBooksData.b_count}" class="b-count" />
+                    <input type="hidden" name="m_state" th:value="${memberInfo.m_state}" />
+                </div>
+            </div>
+
+            <div class="member-info">
+                <div>
+                    <label for="sb_name">받는 사람 이름</label>
+                    <input type="text" th:value="${memberInfo.m_name}" id="sb_name" name="sb_name" placeholder="수령하실 분의 이름을 적어주세요" />
+                </div>
+
+                <div>
+                    <label for="search_address_btn">받는 사람 주소</label>
+                    <div class="addr-wrap">
+                        <input type="text" id="postcode" name="sb_addr_code" th:value="${memberInfo.m_addr_code}" placeholder="우편번호" readonly>
+                        <button type="button" id="search_address_btn" onclick="searchAddress()" class="btn sub"><i class="fa-solid fa-location-crosshairs"></i></button>
+                    </div>
+
+                    <div>
+                        <input type="text" id="address" name="sb_addr" th:value="${memberInfo.m_addr}" placeholder="주소" readonly>
+                        <input type="text" id="detailAddress" name="sb_detail_addr" th:value="${memberInfo.m_detail_addr}" placeholder="상세주소">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="sb_memo">배송 메모</label>
+                    <input type="text" id="sb_memo" name="sb_memo" placeholder="배송 메모를 적어주세요" />
+                </div>
+
+                <div class="price-info">
+                    <div>
+                        <p>현재 BP</p>
+                        <p class="price-result" th:text="${#numbers.formatInteger(currentPoint, 1, 'COMMA') + '  BP'}"></p>
+                    </div>
+
+                    <div>
+                        <p>전체 금액</p>
+                        <p class="price-result" th:text="${#numbers.formatInteger(allPrice, 1, 'COMMA') + '  BP'}"></p>
+                    </div>
+
+                    <div>
+                        <p>등급 할인</p>
+                        <p class="member-sale-price" th:text="${'- ' +#numbers.formatInteger(discount, 1, 'COMMA') + '  BP'}"></p>
+                    </div>
+
+                    <div>
+                        <p>배송비</p>
+                        <p class="delivery-price">+ 3,000 BP</p>
+                    </div>
+                </div>
+
+                <div class="total-price">
+                    <div th:switch="${memberInfo.m_grade}">
+                        <p>결제 예정 금액</p>
+
+                        <p class="total-price-result" th:text="${#numbers.formatInteger(finalPrice, 1, 'COMMA') + '  BP'}"></p>
+                        <input type="hidden" name="sb_all_price" th:value="${finalPrice}" />
+                        <input type="hidden" name="currentPoint" th:value="${currentPoint}" />
+                    </div>
+                </div>
+
+                <div class="submit-btn-wrap">
+                    <a th:href="@{/mypage/member_cart_form}">뒤로 가기</a>
+                    <button type="button" class="btn highlight payment" onclick="paymentFormSubmit();">결제하기</button>
+                </div>
+
+        </form>
+    </div>
+</div>
+
+</html>

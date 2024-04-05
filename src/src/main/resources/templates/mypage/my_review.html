@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
+
+<head>
+    <title>책마루 :: 내가 쓴 리뷰</title>
+
+    <th:block th:replace="~{include/js/list_js.html::list_js}"></th:block>
+</head>
+
+<div id="my_review" class="content-wrap" layout:fragment="content">
+    <h2 class="title">내가 쓴 리뷰</h2>
+
+    <div class="content">
+        <div class="review-wrap">
+            <th:block th:if="${session.loginedMemberInfo != null}">
+                <th:block th:if="${reviews} != null">
+                    <div class="review-item" th:replace="~{/book/review.html::review-list}"></div>
+                </th:block>
+
+                <th:block th:if="${reviews.size()} == 0">
+                    <div>작성한 리뷰가 없습니다.</div>
+                </th:block>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+</html>

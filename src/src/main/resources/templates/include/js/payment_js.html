@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+
+<th:block th:fragment="payment_js">
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            // 수량 변경
+            if (document.querySelectorAll(".book-count")) {
+                document.querySelectorAll(".book-count").forEach((e) => {
+                    e.addEventListener("change", function () {
+                        let count = this.value;
+                        let cNo = this.dataset.index;
+
+                        if (count <= 0) {
+                            alert("올바른 수량을 입력해주세요");
+                            this.value = 0;
+                        } else {
+                            ajaxBookCount(cNo, count);
+                        }
+                    });
+                });
+            }
+
+            // 포인트 충전
+            if (document.querySelectorAll(".point")) {
+                document.querySelectorAll(".point").forEach(el => {
+                    el.addEventListener("click", function (e) {
+                        document.getElementById("bp").value = parseInt(e.target.dataset.price) + parseInt(document.getElementById("bp").value);
+                    })
+                })
+            }
+
+            if (document.querySelectorAll(".add-cart")) {
+                document.querySelectorAll(".add-cart").forEach((el) => {
+                    el.addEventListener("click", function () {
+                        let bNo = el.dataset.index;
+
+                        ajaxAddCart(bNo, 1);
+                    })
+                })
+            }
+
+            if (document.querySelectorAll(".remove-cart")) {
+                document.querySelectorAll(".remove-cart").forEach((el) => {
+                    el.addEventListener("click", function () {
+                        let cNo = el.dataset.index;
+
+                        ajaxRemoveCart(cNo);
+                    })
+                })
+            }
+
+            if (document.querySelectorAll(".remove-pick")) {
+                document.querySelectorAll(".remove-pick").forEach((el) => {
+                    el.addEventListener("click", function () {
+                        let bNo = el.dataset.index;
+
+                        ajaxRemovePick(bNo);
+                    })
+                })
+            }
+        });
+
+        function ajaxBookCount(cNo, count) {
+            let httpRequest = new XMLHttpRequest();
+
+            httpRequest.open("POST", "/ajax/cart_modify_form", true);
+            httpRequest.setRequestHeader("Content-Type", "application/json");
+
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                    if (httpRequest.responseText == "true") {
+                        console.log("수량 변경 성공");
+                        updateTotal(cNo, count);
+                    } else {
+                        alert("수량 변경에 실패했습니다. 다시 시도해주세요.");
+                    }
+
+                    // spinnerStatus("off");
+                } else if (httpRequest.status == 403) {
+                    alert("접근 거부");
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 404) {
+                    alert("페이지 없음")
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 500) {
+                    alert("서버 오류 발생");
+                    spinnerStatus("off");
+                }
+            };
+
+            // spinnerStatus("on");
+
+            let data = {
+                c_no: cNo,
+                c_book_count: count
+            };
+
+            httpRequest.send(JSON.stringify(data));
+        }
+
+        function ajaxAddCart(bNo, count) {
+            let httpRequest = new XMLHttpRequest();
+
+            httpRequest.open("POST", "/ajax/add_my_cart", true);
+            httpRequest.setRequestHeader("Content-Type", "application/json");
+
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                    if (httpRequest.responseText == "true") {
+                        let result = confirm("장바구니에 추가되었습니다.\n장바구니로 이동하시겠습니까?");
+
+                        if (result) {
+                            location.href = [[@{/mypage/member_cart_form}]];
+                        }
+                    } else if (httpRequest.responseText == "false") {
+                        alert("장바구니 추가에 실패했습니다. 다시 시도해주세요.");
+                    }
+
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 403) {
+                    alert("접근 거부");
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 404) {
+                    alert("페이지 없음")
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 500) {
+                    alert("서버 오류 발생");
+                    spinnerStatus("off");
+                }
+            };
+
+            spinnerStatus("on");
+
+            let data = { b_no: bNo, c_book_count: count };
+
+            httpRequest.send(JSON.stringify(data));
+        }
+
+        function ajaxRemoveCart(cNo) {
+            let httpRequest = new XMLHttpRequest();
+
+            httpRequest.open("POST", "/ajax/delete_mycart_confirm", true);
+            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                    if (httpRequest.responseText == "true") {
+                        document.getElementById("cart_" + cNo).remove();
+                        alert("장바구니에서 제거되었습니다.");
+                    } else if (httpRequest.responseText == "false") {
+                        alert("장바구니에서 제거에 실패했습니다. 다시 시도해주세요.");
+                    }
+
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 403) {
+                    alert("접근 거부");
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 404) {
+                    alert("페이지 없음")
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 500) {
+                    alert("서버 오류 발생");
+                    spinnerStatus("off");
+                }
+            };
+
+            spinnerStatus("on");
+
+            httpRequest.send("c_no=" + cNo);
+        }
+
+        function ajaxRemovePick(bNo) {
+            let httpRequest = new XMLHttpRequest();
+
+            httpRequest.open("POST", "/ajax/delete_member_pick", true);
+            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                    if (httpRequest.responseText == "true") {
+                        document.getElementById("pick_" + bNo).remove();
+                        alert("찜 목록에서 제거되었습니다.");
+                    } else if (httpRequest.responseText == "false") {
+                        alert("찜 목록 제거에 실패했습니다. 다시 시도해주세요.");
+                    }
+
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 403) {
+                    alert("접근 거부");
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 404) {
+                    alert("페이지 없음")
+                    spinnerStatus("off");
+                } else if (httpRequest.status == 500) {
+                    alert("서버 오류 발생");
+                    spinnerStatus("off");
+                }
+            };
+
+            spinnerStatus("on");
+
+            httpRequest.send("b_no=" + bNo);
+        }
+
+        function updateTotal(cNo, count) {
+            let price = parseInt(document.getElementById("price_" + cNo).innerText.replace(/[^0-9]/g, ''));
+            let totalPrice = count * price;
+
+            document.getElementById("total_price_" + cNo).innerText = numberWithCommas(totalPrice) + " BP";
+        }
+
+        function point_charge_form_check() {
+            let form = document.point_charge_form;
+
+            if (form.pl_payment_book_point.value < 1000) {
+                alert("충전할 금액을 확인해주세요.")
+                return;
+            }
+
+            form.submit();
+        }
+
+        /* 다음 주소 */
+        function searchAddress() {
+            new daum.Postcode({
+                oncomplete: function (data) {
+                    // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                    // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                    var addr = ""; // 주소 변수
+                    var extraAddr = ""; // 참고항목 변수
+
+                    //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                    if (data.userSelectedType === "R") {
+                        // 사용자가 도로명 주소를 선택했을 경우
+                        addr = data.roadAddress;
+                    } else {
+                        // 사용자가 지번 주소를 선택했을 경우(J)
+                        addr = data.jibunAddress;
+                    }
+
+                    // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                    if (data.userSelectedType === "R") {
+                        // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                        // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                        if (data.bname !== "" && /[동|로|가]$/g.test(data.bname)) {
+                            extraAddr += data.bname;
+                        }
+                        // 건물명이 있고, 공동주택일 경우 추가한다.
+                        if (data.buildingName !== "" && data.apartment === "Y") {
+                            extraAddr +=
+                                extraAddr !== "" ? ", " + data.buildingName : data.buildingName;
+                        }
+                        // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                        if (extraAddr !== "") {
+                            extraAddr = " (" + extraAddr + ")";
+                        }
+                    }
+
+                    // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                    document.getElementById("postcode").value = data.zonecode;
+                    document.getElementById("address").value = addr + " " + extraAddr;
+                    // 커서를 상세주소 필드로 이동한다.
+                    document.getElementById("detailAddress").focus();
+                },
+            }).open();
+        }
+
+        function paymentFormSubmit() {
+            console.log("paymentFormSubmit()");
+
+            let form = document.payment_form;
+			if (form.m_state.value == 2) {
+				alert("계정이 비활성화 된 상태입니다. 관리자에게 문의하세요");
+				location.href = [[@{/}]];
+				
+				return;
+			} 
+			
+			if (form.sb_name.value === "") {
+                alert("받으실분의 이름을 입력해 주세요");
+                form.sb_name.focus();
+            } else if (form.sb_addr_code.value === "") {
+                alert("받으실분의 주소를 입력해 주세요");
+                form.sb_addr_code.focus();
+            } else if (form.sb_addr.value === "") {
+                alert("받으실분의 주소를 입력해 주세요");
+                form.sb_addr.focus();
+            } else if (form.sb_detail_addr.value === "") {
+                alert("받으실분의 상세주소를 입력해 주세요");
+                form.sb_detail_addr.focus();
+            } else {
+                let bCountArr = [];
+                let sbCountArr = [];
+
+                document.querySelectorAll(".b-count").forEach(el => {
+                    bCountArr.push(parseInt(el.value));
+                })
+
+                document.querySelectorAll(".sb-count").forEach(el => {
+                    sbCountArr.push(parseInt(el.value));
+                })
+
+                for (let i = 0; i < bCountArr.length; i++) {
+                    if (bCountArr[i] < sbCountArr[i]) {
+                        alert("도서 재고가 부족합니다. 수량을 조절하거나 관리자에게 문의하세요");
+                        return;
+                    }
+                }
+
+                if (parseInt(form.currentPoint.value) >= parseInt(form.sb_all_price.value)) {
+                    form.submit();
+                } else {
+                    alert("잔여 BP가 부족합니다. BP를 충전해 주세요");
+                    window.location.href = "http://localhost:8090/mypage/point_charge";
+                }
+            }
+        }
+
+        function allBuy() {
+            document.querySelectorAll(".ck-box").forEach(el => {
+                let index = el.dataset.index;
+                document.getElementById("b_no_" + index).setAttribute("name", "b_no");
+                document.getElementById("c_book_count_" + index).setAttribute("name", "c_book_count");
+            })
+
+            document.membercart_form.submit();
+        }
+
+        function selectBuy() {
+            let flag = false;
+
+            document.querySelectorAll(".ck-box").forEach(el => {
+                if (el.checked) {
+                    let index = el.dataset.index;
+                    document.getElementById("b_no_" + index).setAttribute("name", "b_no");
+                    document.getElementById("c_book_count_" + index).setAttribute("name", "c_book_count");
+                    document.membercart_form.submit();
+                    flag = true;
+                }
+            })
+
+            if (!flag) {
+                alert('구매할 도서를 선택해 주세요');
+            }
+        }
+
+        function oneBuy(b_no) {
+            let index = b_no;
+            document.getElementById("b_no_" + index).setAttribute("name", "b_no");
+            document.getElementById("c_book_count_" + index).setAttribute("name", "c_book_count");
+
+            document.membercart_form.submit();
+        }
+
+    </script>
+
+</th:block>
+
+</html>
