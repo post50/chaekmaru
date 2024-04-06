@@ -36,5 +36,5 @@ https://docs.google.com/spreadsheets/d/1RBwt68j833JHNtYakZwk5M1yiG95mZm3mWnghnEz
 
 #### 🔧 Release(프로젝트 종료 이후)
 * **관리자 모드 기능 추가**(2024. 03. 30)
-  # 관리자 판매현황 Board  => 이미지 파일로 변환 후 다운로드 => 이미지를 관리자들에게 이메일 전송
+  ###### 관리자 판매현황 Board  => 이미지 파일로 변환 후 다운로드 => 이미지를 관리자들에게 이메일 전송
    
