@@ -19,7 +19,7 @@
 
 ### ⚙ 개발 환경
 * **사용언어** : HTML, CSS, JAVASCRIPT,  JAVA
-* **추가 기능** : Java Spring Boot, Swiper, Thymeleaf, Spring Security, Lombok, Java Mail, 카카오 주소 api
+* **추가 기능** : Java Spring Boot, Thymeleaf, Spring Security, Lombok, Java Mail, 카카오 주소 api, Swiper.js, Chart.js
 * **데이터 베이스** : Oracle DB, MyBatis, DBeaver
 * **사용 툴** : Spring Tool Suite 4, Visual Studio Code, Git, Github
 * **데이터** : KCISA 한국문화정보원 - 문화 빅데이터 플랫폼
